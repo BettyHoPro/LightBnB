@@ -17,16 +17,17 @@ const pool = new Pool({
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = function (email) {
-  let user;
-  for (const userId in users) {
-    user = users[userId];
-    if (user.email.toLowerCase() === email.toLowerCase()) {
-      break;
-    } else {
-      user = null;
-    }
-  }
-  return Promise.resolve(user);
+  return pool
+    .query(
+      `
+  SELECT * 
+  FROM users
+  WHERE email = $1;
+  `,
+      [email]
+    )
+    .then((res) => res.rows)
+    .catch((err) => console.error("query error", err.stack));
 };
 exports.getUserWithEmail = getUserWithEmail;
 
@@ -82,9 +83,8 @@ const getAllProperties = function (options, limit = 10) {
   `,
       [limit]
     )
-    .then(res => res.rows)
+    .then((res) => res.rows)
     .catch((err) => console.error("query error", err.stack));
-
 };
 exports.getAllProperties = getAllProperties;
 
