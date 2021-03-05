@@ -102,7 +102,8 @@ const getAllReservations = function (guest_id, limit = 10) {
     ORDER BY start_date
     LIMIT $2;
   `, [ guest_id , limit])
-    .then(res => res.rows);
+    .then(res => res.rows)
+    .catch((err) => console.error("query error", err.stack));
 };
 exports.getAllReservations = getAllReservations;
 
