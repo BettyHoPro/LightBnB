@@ -1,4 +1,4 @@
-SELECT properties.id, title, cost_per_night, avg(rating) as average_rating
+SELECT properties.*, avg(rating) as average_rating
 FROM properties
 JOIN property_reviews ON property_reviews.property_id = properties.id
 WHERE city like '%ancouv%'
