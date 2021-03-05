@@ -70,29 +70,18 @@ exports.getUserWithId = getUserWithId;
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-// const addUser = function(user) {
-//   return pool.query(`
-//   INSERT INTO users (name, email, password)
-//   VALUES ($1.name, $1.email, $1.password)
-//   RETURNING *`, [user])
-//     .then(res => res.rows[0])
-//     .catch(err => console.error("query error", err.stack));
-// };
-// exports.addUser = addUser;
-
-// 
 const addUser = function (user) {
-  return pool.query(`
+  return pool
+    .query(
+      `
   INSERT INTO users (name, email, password)
   VALUES ($1, $2, $3) RETURNING *;
-  `, [user.name, user.email, user.password])
-    .then(res => res.rows[0]);
+  `,
+      [user.name, user.email, user.password]
+    )
+    .then((res) => res.rows[0]);
 };
 exports.addUser = addUser;
-// Accepts a user object that will have a name, email, and hashed password property.
-// This function should insert the new user into the database.
-// It will return a promise that resolves with the new user object. This object should contain the user's id after it's been added to the database.
-// Add RETURNING *; to the end of an INSERT query to return the objects that were inserted. This is handy when you need the auto generated id of an object you've just added to the database.
 
 /// Reservations
 
@@ -102,7 +91,18 @@ exports.addUser = addUser;
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function (guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+  return pool.query(`
+    SELECT properties.*, reservations.*, avg(rating) as average_rating
+    FROM reservations
+    JOIN properties on reservations.property_id = properties.id
+    JOIN property_reviews ON property_reviews.property_id = properties.id
+    WHERE reservations.guest_id = $1
+    AND reservations.end_date < now()::date 
+    GROUP BY properties.id, reservations.id
+    ORDER BY start_date
+    LIMIT $2;
+  `, [ guest_id , limit])
+    .then(res => res.rows);
 };
 exports.getAllReservations = getAllReservations;
 
