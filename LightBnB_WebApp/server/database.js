@@ -9,23 +9,6 @@ const pool = new Pool({
   database: "lightbnb",
 });
 
-pool
-  .query(
-    `
-SELECT users.id, name
-FROM users
-WHERE id < 20;
-`
-  )
-  .then((response) => {
-    response.rows.forEach((user) => {
-      console.log(
-        `${user.name}: ${user.id} `
-      );
-    });
-  })
-  .catch((err) => console.error("query error", err.stack));
-
 /// Users
 
 /**
@@ -91,11 +74,17 @@ exports.getAllReservations = getAllReservations;
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 const getAllProperties = function (options, limit = 10) {
-  const limitedProperties = {};
-  for (let i = 1; i <= limit; i++) {
-    limitedProperties[i] = properties[i];
-  }
-  return Promise.resolve(limitedProperties);
+  return pool
+    .query(
+      `
+  SELECT * FROM properties
+  LIMIT $1
+  `,
+      [limit]
+    )
+    .then(res => res.rows)
+    .catch((err) => console.error("query error", err.stack));
+
 };
 exports.getAllProperties = getAllProperties;
 
