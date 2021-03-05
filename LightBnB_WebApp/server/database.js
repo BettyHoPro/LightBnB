@@ -26,7 +26,14 @@ const getUserWithEmail = function (email) {
   `,
       [email]
     )
-    .then((res) => res.rows)
+    .then((res) => {
+      if (res.rows.length === 1) {
+        return res.rows[0];
+      }
+      if (res.rows.length === 0) {
+        return null;
+      }
+    })
     .catch((err) => console.error("query error", err.stack));
 };
 exports.getUserWithEmail = getUserWithEmail;
@@ -37,7 +44,24 @@ exports.getUserWithEmail = getUserWithEmail;
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = function (id) {
-  return Promise.resolve(users[id]);
+  // return Promise.resolve(users[id]);
+  return pool
+    .query(
+      `
+  SELECT * 
+  FROM users
+  WHERE id = $1`,
+      [id]
+    )
+    .then((res) => {
+      if (res.rows.length === 1) {
+        return res.rows[0];
+      }
+      if (res.rows.length === 0) {
+        return null;
+      }
+    })
+    .catch((err) => console.error("query error", err.stack));
 };
 exports.getUserWithId = getUserWithId;
 
